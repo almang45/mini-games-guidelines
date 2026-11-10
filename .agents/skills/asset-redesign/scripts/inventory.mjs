@@ -76,14 +76,17 @@ function loadSources(files, project) {
     if (!isDoc && !CODE_EXT.has(ext)) continue;
     if (file === "AGENTS.md" || file === "CLAUDE.md" || file.startsWith(".agents/")) continue;
     if (matchRule(project.protected, file) || !existsSync(file)) continue;
-    const text = readFileSync(file, "utf8");
+    const raw = readFileSync(file, "utf8");
+    let text = raw;
+    // The page's own absolute URLs (og:image) point at deployed files; read them as local paths.
+    if (project.siteUrl) text = text.split(project.siteUrl).join("./");
     const scripts = ext === ".html" ? inlineBlocks(text, "script") : [];
     const styles = ext === ".html" ? inlineBlocks(text, "style") : [];
     let jsText = "";
     if (ext === ".js" || ext === ".mjs") jsText = text;
     else if (scripts.length) jsText = scripts.map((b) => b.text).join("\n");
     const css = ext === ".css" ? text : styles.map((b) => b.text).join("\n");
-    sources.push({ file, ext, kind: isDoc ? "doc" : "code", text, jsText, css, scripts, styles });
+    sources.push({ file, ext, kind: isDoc ? "doc" : "code", raw, text, jsText, css, scripts, styles });
   }
   return sources;
 }
@@ -110,6 +113,8 @@ function assetRow(file, sources, project) {
     if (bytes > RASTER_MAX_BYTES) notes.push("over 200 KB");
   }
   const refs = references(file, sources);
+  const builds = project.sourceFiles && project.sourceFiles[file];
+  if (builds) refs.code.push(`source of \`${builds}\``);
   return `| \`${file}\` | ${bytes} | ${size} | ${notes.join(", ")} | ${refs.code.join("<br>") || "**none found**"} | ${refs.docs.join(", ")} |`;
 }
 
@@ -144,9 +149,9 @@ function resolveLocal(fromFile, ref) {
 function declaredIcons(sources) {
   const rows = [];
   for (const src of sources.filter((s) => s.ext === ".html")) {
-    const head = src.text.split(/<\/head>/i)[0];
+    const head = src.raw.split(/<\/head>/i)[0];
     for (const tag of head.match(/<link\b[^>]*rel\s*=\s*["'][^"']*(icon|manifest|mask)[^"']*["'][^>]*>/gi) || []) {
-      const href = (tag.match(/\bhref\s*=\s*["']([^"']+)["']/i) || [])[1] || "";
+      const href = (tag.match(/\bhref\s*=\s*(["'])(.*?)\1/i) || [])[2] || "";
       const notes = [];
       let target = href;
       if (href.startsWith("data:")) {
@@ -154,7 +159,7 @@ function declaredIcons(sources) {
         const svg = decodeURIComponent(href.replace(/^data:image\/svg\+xml(;utf8)?,/i, ""));
         if (/<text\b/i.test(svg)) notes.push("live text: renders in whatever font the viewer has");
       }
-      rows.push(`| \`${src.file}\` | \`${tag.replace(/\s+href\s*=\s*["'][^"']*["']/i, "").replace(/\|/g, "\\|")}\` | ${target.replace(/\|/g, "\\|")} | ${notes.join(", ")} |`);
+      rows.push(`| \`${src.file}\` | \`${tag.replace(/\s+href\s*=\s*(["']).*?\1/i, "").replace(/\|/g, "\\|")}\` | ${target.replace(/\|/g, "\\|")} | ${notes.join(", ")} |`);
     }
     for (const tag of head.match(/<meta\b[^>]*(theme-color|og:image|twitter:image)[^>]*>/gi) || []) {
       rows.push(`| \`${src.file}\` | \`${tag.replace(/\|/g, "\\|")}\` | | |`);
