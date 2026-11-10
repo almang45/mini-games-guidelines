@@ -78,6 +78,19 @@ function lineAt(text, index) {
   return line;
 }
 
+// Commits after base that name no co-author: every agent commit credits its agent (AGENTS.md).
+export function commitsWithoutCoauthor(base) {
+  return git(["log", "--no-merges", "--format=%h%x1f%s%x1f%B%x1e", `${base}..HEAD`])
+    .split("\x1e")
+    .map((rec) => rec.replace(/^\n/, ""))
+    .filter(Boolean)
+    .map((rec) => {
+      const [sha, subject, body] = rec.split("\x1f");
+      return { sha, subject, body: body || "" };
+    })
+    .filter((c) => !/^co-authored-by:\s*\S/im.test(c.body));
+}
+
 export function runMain(name, main) {
   try {
     const code = main();
