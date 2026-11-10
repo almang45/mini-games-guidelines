@@ -1,5 +1,5 @@
 #!/bin/sh
-# Installs the commit-msg hook that adds the Antigravity co-author trailer. Hooks live in the
+# Installs the commit-msg hook that adds the Antigravity Assisted-by trailer. Hooks live in the
 # repository's common git dir, so one install covers the main checkout and every worktree,
 # including the ones Antigravity creates under ~/.gemini/antigravity/worktrees/.
 # Usage, from anywhere in the repo: sh .agents/hooks/install.sh
@@ -12,7 +12,7 @@ hooks_dir=$(cd "$(git rev-parse --git-path hooks)" 2>/dev/null && pwd) || {
   hooks_dir=$(cd "$(git rev-parse --git-path hooks)" && pwd)
 }
 target="$hooks_dir/commit-msg"
-marker='Antigravity co-author trailer'
+marker='Antigravity Assisted-by trailer'
 
 if [ -f "$target" ] && ! grep -q "$marker" "$target"; then
   if [ -e "$hooks_dir/commit-msg.local" ]; then

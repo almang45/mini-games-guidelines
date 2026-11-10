@@ -14,13 +14,14 @@ collapsible sections, the light/dark toggle).
   `test:`). Commits are signed by the user's git config; never pass
   `--no-gpg-sign` or override the author.
 - **Every commit Antigravity makes ends with the trailer
-  `Co-Authored-By: Antigravity <noreply@antigravity.google>`**, including the
-  amends, fixups and merge commits it creates; another agent adds its own
-  trailer instead. Write it in the message yourself. As a backstop,
-  `.agents/hooks/commit-msg` appends it when the commit comes from Antigravity
-  (install once per clone with `sh .agents/hooks/install.sh`), and
-  `check-scope.mjs` blocks a branch with any commit that has no
-  `Co-Authored-By` trailer.
+  `Assisted-by: Antigravity`**, including the amends, fixups and merge commits
+  it creates. Never credit Antigravity with `Co-Authored-By`; another agent
+  keeps its own trailer. Write it in the message yourself. As a backstop,
+  `.agents/hooks/commit-msg` appends it (and drops a `Co-Authored-By:
+  Antigravity` line) when the commit comes from Antigravity (install once per
+  clone with `sh .agents/hooks/install.sh`), and `check-scope.mjs` blocks a
+  branch with a commit that has neither an `Assisted-by` nor a
+  `Co-Authored-By` trailer, or that credits Antigravity as a co-author.
 - Never commit screenshots, mockups, concept images, `.DS_Store` or local
   config.
 - Rules content (`index.html` body text, `md/`) is the user's: correct a rule

@@ -1,5 +1,5 @@
 #!/bin/sh
-# Appends the Antigravity co-author trailer to commits made by the Antigravity agent, so its work
+# Appends the Antigravity Assisted-by trailer to commits made by the Antigravity agent, so its work
 # is attributed even when the agent forgets the trailer. Commits made by a person are left alone.
 #
 # A commit counts as Antigravity's when any of these holds:
@@ -7,13 +7,12 @@
 #   - an ancestor process is Antigravity's agent: the app's language_server or the agy CLI
 #     (the IDE's integrated terminal runs under a different helper, so a person typing there is
 #     not matched),
-#   - ANTIGRAVITY_COAUTHOR=1 is set (manual override; ANTIGRAVITY_COAUTHOR=0 disables the hook).
+#   - ANTIGRAVITY_ASSISTED=1 is set (manual override; ANTIGRAVITY_ASSISTED=0 disables the hook).
 # Installed by .agents/hooks/install.sh; chains to a commit-msg hook that was there before.
 set -eu
 
 msg_file="$1"
-trailer_name='Co-Authored-By'
-trailer_value='Antigravity <noreply@antigravity.google>'
+trailer='Assisted-by: Antigravity'
 
 hook_dir=$(dirname "$0")
 if [ -x "$hook_dir/commit-msg.local" ]; then
@@ -21,7 +20,7 @@ if [ -x "$hook_dir/commit-msg.local" ]; then
 fi
 
 is_antigravity() {
-  case "${ANTIGRAVITY_COAUTHOR:-}" in
+  case "${ANTIGRAVITY_ASSISTED:-}" in
     1) return 0 ;;
     0) return 1 ;;
   esac
@@ -46,10 +45,16 @@ is_antigravity() {
 
 is_antigravity || exit 0
 
+# Antigravity is credited as an assistant, never as a co-author: drop a Co-Authored-By line naming it.
+if grep -qi '^co-authored-by:[[:space:]]*antigravity' "$msg_file"; then
+  tmp="$msg_file.assisted.$$"
+  grep -vi '^co-authored-by:[[:space:]]*antigravity' "$msg_file" > "$tmp" || true
+  mv "$tmp" "$msg_file"
+fi
+
 # Already attributed (any casing): nothing to do.
-if grep -qi "^${trailer_name}: Antigravity" "$msg_file"; then
+if grep -qi '^assisted-by:[[:space:]]*antigravity' "$msg_file"; then
   exit 0
 fi
 
-git interpret-trailers --in-place --if-exists addIfDifferent \
-  --trailer "${trailer_name}: ${trailer_value}" "$msg_file"
+git interpret-trailers --in-place --trailer "$trailer" "$msg_file"
