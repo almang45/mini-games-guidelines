@@ -1,0 +1,37 @@
+{
+  "name": "mini-games-guidelines",
+  "baseRef": "origin/master",
+  "pages": ["index.html"],
+  "assetDirs": ["img"],
+  "protected": [
+    {
+      "path": "img/mahjong",
+      "why": "Wikimedia Commons tile artwork under CC BY-SA 4.0, credited in the footer; replacing it changes the license notice"
+    }
+  ],
+  "blocked": [
+    { "path": "js", "why": "site behavior (tabs, search, theme toggle)" },
+    { "path": "md", "why": "rule content" },
+    { "path": ".agents", "why": "agent config" },
+    { "path": ".github", "why": "CI config" },
+    { "path": "AGENTS.md", "why": "agent config" },
+    { "path": "CLAUDE.md", "why": "agent config" },
+    { "path": ".gitignore", "why": "repo config" }
+  ],
+  "review": [],
+  "contrastPairs": [
+    { "fg": "--text-primary", "bg": "--bg-primary" },
+    { "fg": "--text-white", "bg": "--bg-primary" },
+    { "fg": "--text-primary", "bg": "--bg-tertiary", "over": "--bg-primary" },
+    { "fg": "--text-secondary", "bg": "--bg-tertiary", "over": "--bg-primary" },
+    { "fg": "--text-accent", "bg": "--bg-tertiary", "over": "--bg-primary" },
+    { "fg": "--text-primary", "bg": "--bg-secondary", "over": "--bg-primary" },
+    { "fg": "--text-accent", "bg": "--bg-secondary", "over": "--bg-primary" },
+    { "fg": "--card-accent", "bg": "--card-face" },
+    { "fg": "--text-primary", "bg": "--overlay-bg" },
+    { "fg": "--text-secondary", "bg": "--overlay-bg" },
+    { "fg": "--text-accent", "bg": "--overlay-bg" },
+    { "fg": "--text-primary", "bg": "--overlay-item-bg" },
+    { "fg": "--text-accent", "bg": "--overlay-item-bg" }
+  ]
+}
